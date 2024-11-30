@@ -33,7 +33,7 @@
     RequiredAssemblies = @()
 
     # Functions to export from this module
-    FunctionsToExport = @('New-SystemMonitor', 'New-NetworkMonitor', 'Get-IPGeoLocation')
+    FunctionsToExport = @('New-SystemMonitor', 'New-NetworkMonitor', 'Get-IPGeoLocation', 'Stop-Computer', 'Restart-Computer', 'Suspend-Computer', 'Exit-UserSession', 'Show-PsColors', 'Show-AdvancedSystemProperties')
 
     # Cmdlets to export from this module
     CmdletsToExport = @()
@@ -42,7 +42,7 @@
     VariablesToExport = @()
 
     # Aliases to export from this module
-    AliasesToExport = @('net', 'sys', 'ipg')
+    AliasesToExport = @('net', 'sys', 'ipg', 'off', 'out', 'reb', 'nap', 'adv', 'pwr')
 
     # DscResources to export from this module
     DscResourcesToExport = @()
