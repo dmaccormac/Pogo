@@ -21,7 +21,8 @@ Monitors system metrics such as CPU usage, memory usage, and disk space, and pro
 #### Parameters:
 - **refreshInterval**: Specifies the interval (in seconds) at which to refresh the system metrics.
 - **sortBy**: Specifies the column by which to sort the process list. Valid values are 'CPU', 'Memory', and 'DiskIO'.
-- **topN**: Specifies the number of items to display in the view. Default value is 10.
+- **top**: Specifies the number of items to display in the view. Default value is 10.
+- **watchProcess**: Specifies the name(s) of the process to highlight in the table view.
 
 #### Example:
 ```powershell
@@ -33,14 +34,15 @@ New-PogoSystemMonitor -refreshInterval 60 -sortBy CPU -topN 10
 Monitors network connections and displays information about the top N connections.
 
 #### Parameters:
-- **topN**: Specifies the number of top network connections to display.
-- **refreshInterval**: Specifies the interval (in seconds) at which to refresh the network information.
-- **sentThreshold**: Specifies the threshold for bytes sent (in MB).
-- **receivedThreshold**: Specifies the threshold for bytes received (in MB).
+- **top**: Specifies the number of top network connections to display.
+- **refreshInterval**: Specifies the interval (in seconds) at which to refresh the system metrics.
+- **transferWarningThreshold**: Specifies the threshold for bytes transfer warning (in MB). Exceeds highlighted in yellow.
+- **transferCriticalThreshold**: Specifies the threshold for bytes transfer critical (in MB). Exceeds highlighted in red.
+- **watchProcess**: Specifies the name(s) of the process to highlight in the table view.
 
 Example:
 ```powershell
-New-PogoNetworkMonitor -topN 10 -refreshInterval 60 -sentThreshold 10.0 -receivedThreshold 10.0
+New-PogoNetworkMonitor -watchProcess msedge -refreshInterval 30 -transferCriticalThreshold 9.9 
 ```
 
 ## Installation
