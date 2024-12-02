@@ -3,7 +3,7 @@
     RootModule = 'Pogo.psm1'
 
     # Version number of this module.
-    ModuleVersion = '1.0.0'
+    ModuleVersion = '1.1.1'
 
     # ID used to uniquely identify this module
     GUID = 'e2a2c734-89a7-40bd-8880-fc04422ac3ca'
@@ -12,13 +12,13 @@
     Author = 'Dan MacCormac <dmaccormac@gmail.com>'
 
     # Company or vendor of this module
-    CompanyName = 'Your Company Name'
+    CompanyName = 'Dan MacCormac <dmaccormac@gmail.com>'
 
     # Copyright statement for this module
     Copyright = '© 2024 Your Company Name. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'This module provides monitoring tools for system and network performance.'
+    Description = 'Shortcuts and tools for system administration'
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -33,7 +33,8 @@
     RequiredAssemblies = @()
 
     # Functions to export from this module
-    FunctionsToExport = @('New-SystemMonitor', 'New-NetworkMonitor', 'Get-IPGeoLocation', 'Stop-Computer', 'Restart-Computer', 'Suspend-Computer', 'Exit-UserSession', 'Show-PsColors', 'Show-AdvancedSystemProperties')
+    FunctionsToExport = @('New-SystemMonitor', 'New-NetworkMonitor', 'Get-IPGeoLocation', 'Stop-Computer', 'Restart-Computer', `
+    'Suspend-Computer', 'Exit-UserSession', 'Show-PsColors', 'Show-AdvancedSystemProperties', 'Switch-VolumeMute')
 
     # Cmdlets to export from this module
     CmdletsToExport = @()
@@ -42,7 +43,7 @@
     VariablesToExport = @()
 
     # Aliases to export from this module
-    AliasesToExport = @('net', 'sys', 'ipg', 'off', 'out', 'reb', 'nap', 'adv', 'pwr')
+    AliasesToExport = @('net', 'sys', 'ipg', 'off', 'out', 'reb', 'nap', 'adv', 'pwr', 'vol')
 
     # DscResources to export from this module
     DscResourcesToExport = @()

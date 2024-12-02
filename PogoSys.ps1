@@ -17,30 +17,34 @@ Specifies the number of items to display in the view. Default value is 10.
 .PARAMETER watchProcess
 Specifies the name(s) of the process to highlight in the table view.
 
+.PARAMETER devMode
+Enable this switch to show the message "DevMode" in the table headers.
+
 .EXAMPLE
-New-PogoSystemMonitor -refreshInterval 60 -sortBy CPU -topN 10
+New-PogoSystemMonitor -refreshInterval 60 -sortBy CPU -top 10
 
 .LINK
 https://github.com/dmaccormac/pogo
-
-
 #>
 
 function New-SystemMonitor {
     param (
         [int]$refreshInterval = 60,  # Refresh interval in seconds
-        [string]$sortBy = "CPU",  # Column to sort by
-        [int]$top = 10, # Number of items to display
+        [string]$sortBy = "Memory",  # Column to sort by
+        [int]$top = 20, # Number of items to display
         [string[]]$watchProcess = "watcher",  # Number of items to display
         [switch]$devMode
     )
-    $ver = 807
 
-    # Colors
+    # Config Variables
     $colorHealthy = "Green"
     $colorWarning = "Yellow" 
     $colorCritical = "Red"
+    
+    $colorHeader = $colorHealthy
+    $colorData = "White"
 
+    $colorWatch = "Magenta"
 
     # Threshold Values
     $cpuWarning = 70  
@@ -49,8 +53,8 @@ function New-SystemMonitor {
     $memoryWarning = 70
     $memoryCritical = 80 
 
-    $diskFreeWarning = 20 
-    $diskFreeCritical = 10 
+    $diskFreeWarning = 40 
+    $diskFreeCritical = 20 
 
     $uptimeWarning = 24 
     $uptimeCritical = 48
@@ -70,7 +74,6 @@ function New-SystemMonitor {
     $biosVersion = $computerInfo.BiosSMBIOSBIOSVersion
 
     $windowsName = $computerInfo.OsName
-    $windowsName = $windowsName.replace("Microsoft ","")
     $windowsBuild = $computerInfo.OsBuildNumber
     $windowsVersion = $computerInfo.OSDisplayVersion
 
@@ -90,8 +93,6 @@ function New-SystemMonitor {
             
             # CPU info
             $cpuUsage = (Get-Counter '\Processor(_Total)\% Processor Time').CounterSamples.CookedValue 
-
- 
 
             # Memory Info
             $memoryInfo = Get-CimInstance -ClassName Win32_OperatingSystem
@@ -116,14 +117,13 @@ function New-SystemMonitor {
 
                 }
             } catch {
-                Write-Host $_.Exception.Message -ForegroundColor Yellow
-                Read-Host("Enter to continue ")
+                Write-Host $_.Exception.Message
             }
 
             # Set alert colors
             $cpuColor = if ($cpuUsage -gt $cpuCritical) { $colorCritical } elseif ($cpuUsage -gt $cpuWarning) { $colorWarning } else { $colorHealthy }
             $memoryColor = if ($memoryUsagePercent -gt $memoryCritical) { $colorCritical } elseif ($memoryUsagePercent -gt $memoryWarning) { $colorWarning } else { $colorHealthy }
-            $diskColor = if ($systemDiskFreeGB -gt $diskCritical) { $colorHealthy } elseif ($systemDiskFreeGB -gt $colorWarning) { $colorWarning } else { $colorCritical }
+            $diskColor = if ($systemDiskFreeGB -lt $diskFreeCritical) { $colorCritical } elseif ($systemDiskFreeGB -lt $diskFreeWarning) { $colorWarning } else { $colorHealthy }
             $uptimeColor = if ($uptime -gt $uptimeCritical) { $colorCritical } elseif ($uptime -gt $uptimeWarning) { $colorWarning } else { $colorHealthy }
             $linkColor = if ($uplinkStatus) { $colorHealthy } else { $colorCritical }
 
@@ -147,46 +147,35 @@ function New-SystemMonitor {
 
             # Prepare for display
             Clear-Host
-            $timestamp = (Get-Date).ToString("HH:mm")
 
-            # Show Header 1
-            Write-Host "$block $username $block $systemModel $block BIOS $biosVersion" -ForegroundColor White -NoNewline 
-            write-host " $block $windowsName $windowsVersion.$windowsBuild $block $timestamp $block" -ForegroundColor White
+            # Monitor Header
+            Write-Host "$block $username $block $systemModel $block BIOS $biosVersion" -ForegroundColor $colorHealthy -NoNewline 
+            write-host " $block $windowsName $windowsVersion.$windowsBuild $block" -ForegroundColor $colorHealthy
 
-            # Show Header 2
             Write-Host "$block CPU $([math]::Round($cpuUsage, 2))%" -ForegroundColor $cpuColor -NoNewline
             Write-Host " $block MEM $usedMemoryGB / $totalMemoryGB GB ($memoryUsagePercent%)" -ForegroundColor $memoryColor -NoNewline
             Write-Host " $block DISK $systemDiskFreeGB GB" -ForegroundColor $diskColor -NoNewline
             Write-Host " $block UPTIME $uptime" -ForegroundColor $uptimeColor -NoNewline
-            Write-Host " $block UPLINK $block" -ForegroundColor $linkColor
-            Write-Host 
+            Write-Host " $block UPLINK" -ForegroundColor $linkColor -NoNewline
+            Write-Host " $block $(Get-Timestamp) $block" -ForegroundColor $colorHeader
+            Write-Host $(Get-HorizontalBar)
 
+            # Table Header
+            Write-Host "ID".PadRight(10) `t "CPU".PadRight(10) `t "Memory".PadRight(10) `t "Disk".PadRight(10) `
+            `t "Name".PadRight(10) -ForegroundColor $colorHeader
+            Write-Host $(Get-HorizontalBar)
 
-            # Show Table data
-            Write-Host "ID `t`t CPU `t`t Memory `t Disk `t Name" -ForegroundColor White
-            Write-Host "-- `t`t --- `t`t ------ `t ---- `t ----" -ForegroundColor White
+            # Table Data
             foreach ($item in $filteredData) {
-                if ($watchProcess.Contains($item.name)) {$color=$colorWarning} else {$color=$colorHealthy}
+                if ($watchProcess.Contains($item.name)) {$color=$colorWatch} else {$color=$colorData}
 
-
-                Write-Host $item.ID -ForegroundColor $color -NoNewline
-                Write-Host `t`t $item.CPU -ForegroundColor $color -NoNewline
-                Write-Host `t`t $item.Memory -ForegroundColor $color -NoNewline
-                Write-Host `t`t $item.DiskIO -ForegroundColor $color -NoNewline
-                Write-Host `t $item.Name -ForegroundColor $color
-            
+                Write-Host $item.ID.ToString().PadRight(10) -ForegroundColor $color -NoNewline
+                Write-Host `t $item.CPU.ToString("F2").PadRight(10) -ForegroundColor $color -NoNewline
+                Write-Host `t $item.Memory.ToString("F2").PadRight(10) -ForegroundColor $color -NoNewline
+                Write-Host `t $item.DiskIO.ToString("F2").PadRight(10) -ForegroundColor $color -NoNewline
+                Write-Host `t $(if ($item.Name.Length -gt 10) { $item.Name.subString(0,10)} else { $item.Name.PadRight(10)}) -ForegroundColor $color
+     
             }
-
-            # DEV MODE FOOTER
-            if ($devMode)
-            {
-                $footerColor = "Yellow"
-
-                Write-Host
-                Write-Host " $block DEV MODE / VER $ver $block" -ForegroundColor $footerColor -NoNewline
-
-            }
-
 
             # Wait for the specified interval before refreshing
             Start-Sleep -Seconds $refreshInterval
