@@ -45,7 +45,7 @@ function Suspend-Computer {
 
 function Show-AdvancedSystemProperties {
     Write-Output "Starting System Properties...";
-    Start-Process sysdm.cpl
+    Start-Process "control" -ArgumentList "sysdm.cpl,,3"
 
 }
 
