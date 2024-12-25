@@ -1,5 +1,12 @@
 
 #################
+#   CONFIG      #
+#################
+$block = [char]0x2588  # Block character for padding
+$bar = [char]0x2500
+$devMessage = "DevMode"
+
+#################
 #   SYSTEM      #
 #################
 
@@ -48,11 +55,37 @@ function Show-PowerOptionsApplet {
 
 }
 
+function Get-Timestamp{
+    return (Get-Date).ToString("HH:mm")
+}
+
+
+function Get-Uptime{
+    $bootTime = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
+    $uptime = (Get-Date) - $bootTime
+    $uptimeHours = [math]::Round($uptime.TotalHours, 2)
+
+    return $uptimeHours
+}
+
 #################
 #   DISPLAY     #
 #################
 
-function Show-PsColors {
+function Get-HorizontalBar{
+    $str = "$bar$bar"
+
+    if ($devMode)
+    {
+        $str = $devMessage
+    }
+
+    $paddedString = $str.PadLeft(50 + $str.Length, $bar).PadRight(100, $bar)
+    return $paddedString 
+
+}
+
+function Show-ColorList {
     
     $List = [enum]::GetValues([System.ConsoleColor])
 
@@ -69,6 +102,15 @@ function Show-PsColors {
     } #end background color ForEach loop
 }
 
+function Show-ColorGrid
+{
+    $colors = [enum]::GetValues([System.ConsoleColor])
+    Foreach ($bgcolor in $colors){
+        Foreach ($fgcolor in $colors) { Write-Host "$fgcolor|"  -ForegroundColor $fgcolor -BackgroundColor $bgcolor -NoNewLine }
+        Write-Host " on $bgcolor"
+    } 
+}
+
 function Switch-VolumeMute {
     $obj = new-object -com wscript.shell 
     $obj.SendKeys([char]173)
@@ -78,93 +120,36 @@ function Switch-VolumeMute {
 #   NETWORK     #
 #################
 
-<#
-.SYNOPSIS
-Retrieves the public IP address of the WAN interface.
-
-.DESCRIPTION
-This function uses an external API to retrieve the public IP address of the WAN interface. It handles errors gracefully and returns "N/A" if the IP address cannot be retrieved.
-
-.EXAMPLE
-PS> Get-WanIP
-Returns the public IP address of the WAN interface.
-
-.NOTES
-Uses the ipify API to retrieve the IP address.
-#>
 
 function Get-WanIP {
     try {
-        return (Invoke-RestMethod -Uri 'https://api64.ipify.org?format=json').ip
+        return (Invoke-WebRequest https://checkip.amazonaws.com/).Content.Trim()
     } catch {
         return "N/A"
     }
 }
 
-
-<#
-.SYNOPSIS
-Retrieves the IPv4 address of the LAN interface assigned by DHCP.
-
-.DESCRIPTION
-This function retrieves the IPv4 address assigned by DHCP from the LAN interface. If an error occurs, it returns "N/A".
-
-.EXAMPLE
-PS> Get-LanIP
-Returns the IPv4 address of the LAN interface assigned by DHCP.
-
-.NOTES
-Filters the IP addresses to return only those with a DHCP prefix origin.
-#>
 
 function Get-LanIP {
     try {
-        return (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.PrefixOrigin -eq 'Dhcp' }).IPAddress
+        return (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -eq $interfaceName }).IPAddress
     } catch {
         return "N/A"
     }
 }
 
-<#
-.SYNOPSIS
-Retrieves the MAC address of the active network adapter.
+function Get-dnsServers {
 
-.DESCRIPTION
-This function retrieves the MAC address of the network adapter with the status "Up". It formats the MAC address by replacing hyphens with colons.
+    $dnsServers = (Get-DnsClientServerAddress -InterfaceAlias $interfaceName -AddressFamily IPv4).ServerAddresses -join ","
+    return $dnsServers
 
-.EXAMPLE
-PS> Get-MacAddress
-Returns the MAC address of the active network adapter.
-
-.NOTES
-Uses the Get-NetAdapter cmdlet to retrieve network adapter information.
-#>
-
-function Get-MacAddress {
-    $mac = (Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }).MacAddress
-    return ($mac -replace '-', ':').Trim()
 }
 
-<#
-.SYNOPSIS
-Retrieves geolocation information for a given IP address.
 
-.DESCRIPTION
-This function retrieves geolocation information for the specified IP address using the ip-api.com service. The results are cached globally to avoid repeated requests for the same IP address.
-
-.PARAMETER commandParams
-Specifies the IP address to retrieve geolocation information for.
-
-.PARAMETER fields
-Specifies additional fields to include in the geolocation information.
-
-.EXAMPLE
-PS> Get-IPGeoLocation -commandParams "8.8.8.8" -fields "countryCode"
-Returns the country code for the specified IP address.
-
-.NOTES
-Uses the ip-api.com service to retrieve geolocation information.
-#>
+function Get-MacAddress {
+    $mac = (Get-NetAdapter | Where-Object { $_.Name -eq $interfaceName }).MacAddress
+    return ($mac -replace '-', ':').Trim()
+}
 
 function Get-IPGeoLocation {
     param(
@@ -192,23 +177,6 @@ function Get-IPGeoLocation {
     }
 }
 
-<#
-.SYNOPSIS
-Tests whether a given string is a valid IPv4 address.
-
-.DESCRIPTION
-This function checks if the provided string is a valid IPv4 address based on the standard IPv4 address format.
-
-.PARAMETER ipAddress
-Specifies the string to be tested as an IPv4 address.
-
-.EXAMPLE
-PS> Test-IPv4Address -ipAddress "192.168.1.1"
-Returns $true if the string is a valid IPv4 address, otherwise $false.
-
-.NOTES
-Uses a regular expression to validate the IPv4 address format.
-#>
 
 function Test-IPv4Address {
     param (
@@ -222,20 +190,6 @@ function Test-IPv4Address {
     }
 }
 
-<#
-.SYNOPSIS
-Displays the contents of the global geolocation cache.
-
-.DESCRIPTION
-This function displays the contents of the global geolocation cache in a table format. The cache contains previously retrieved geolocation information for IP addresses.
-
-.EXAMPLE
-PS> Show-GeoCache
-Displays the IP addresses and their corresponding country codes stored in the global geolocation cache.
-
-.NOTES
-Uses a global variable $geoCache to store geolocation information.
-#>
 
 function Show-GeoCache {
     # Hardcoded global geoCache variable
@@ -254,20 +208,5 @@ function Show-GeoCache {
     $cacheArray | Format-Table -AutoSize
 }
 
-function Get-Timestamp{
-    return (Get-Date).ToString("HH:mm")
-}
 
-function Get-HorizontalBar{
-    $str = "======="
-
-    if ($devMode)
-    {
-        $str = "DEVMODE"
-    }
-
-    $paddedString = $str.PadLeft(50 + $str.Length, '=').PadRight(100, '=')
-    return $paddedString 
-
-}
 

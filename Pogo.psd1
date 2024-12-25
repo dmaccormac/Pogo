@@ -3,22 +3,22 @@
     RootModule = 'Pogo.psm1'
 
     # Version number of this module.
-    ModuleVersion = '1.1.1'
+    ModuleVersion = '1.2.1'
 
     # ID used to uniquely identify this module
     GUID = 'e2a2c734-89a7-40bd-8880-fc04422ac3ca'
 
     # Author of this module
-    Author = 'Dan MacCormac <dmaccormac@gmail.com>'
+    Author = 'Dan MacCormac <dan@maccormac.net>'
 
     # Company or vendor of this module
-    CompanyName = 'Dan MacCormac <dmaccormac@gmail.com>'
+    CompanyName = 'Dan MacCormac <dan@maccormac.net>'
 
     # Copyright statement for this module
-    Copyright = '© 2024 Your Company Name. All rights reserved.'
+    Copyright = '© 2024 Dan MacCormac <dan@maccormac.net>. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'Shortcuts and tools for system administration'
+    Description = 'PowerShell Goto - Sys Admin Utility'
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -34,7 +34,7 @@
 
     # Functions to export from this module
     FunctionsToExport = @('New-SystemMonitor', 'New-NetworkMonitor', 'Get-IPGeoLocation', 'Stop-Computer', 'Restart-Computer', `
-    'Suspend-Computer', 'Exit-UserSession', 'Show-PsColors', 'Show-AdvancedSystemProperties', 'Switch-VolumeMute')
+    'Suspend-Computer', 'Exit-UserSession', 'Show-ColorList', 'Show-ColorGrid', 'Show-AdvancedSystemProperties', 'Switch-VolumeMute')
 
     # Cmdlets to export from this module
     CmdletsToExport = @()
@@ -70,5 +70,5 @@
     HelpInfoURI = 'https://github.com/dmaccormac/pogo'
 
     # Default prefix for cmdlets in this module. If this module is imported with a prefix, it will override this default.
-    DefaultCommandPrefix = 'Pogo'
+    DefaultCommandPrefix = 'PG'
 }

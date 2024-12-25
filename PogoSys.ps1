@@ -40,11 +40,10 @@ function New-SystemMonitor {
     $colorHealthy = "Green"
     $colorWarning = "Yellow" 
     $colorCritical = "Red"
-    
-    $colorHeader = $colorHealthy
     $colorData = "White"
 
-    $colorWatch = "Magenta"
+    $colorHeader = $colorHealthy
+    $colorWatch = $colorCritical
 
     # Threshold Values
     $cpuWarning = 70  
@@ -59,8 +58,6 @@ function New-SystemMonitor {
     $uptimeWarning = 24 
     $uptimeCritical = 48
 
-    $block = [char]0x2588  # Block character for padding
-
     # Get Computer Info
     Clear-Host
     Write-Host "Collecting data..." -ForegroundColor Green
@@ -72,8 +69,9 @@ function New-SystemMonitor {
     $systemManufacturer = $computerInfo.CsManufacturer
     $systemModel = $computerInfo.CsModel
     $biosVersion = $computerInfo.BiosSMBIOSBIOSVersion
+    $serialNumber = (Get-WmiObject -Class Win32_Bios | Select-Object SerialNumber).SerialNumber
 
-    $windowsName = $computerInfo.OsName
+    $windowsName = $computerInfo.OsName.replace("Microsoft ","")
     $windowsBuild = $computerInfo.OsBuildNumber
     $windowsVersion = $computerInfo.OSDisplayVersion
 
@@ -81,11 +79,7 @@ function New-SystemMonitor {
         try {
 
             # Uptime
-            $bootTime = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
-            $uptime = (Get-Date) - $bootTime
-            $uptimeDays = $uptime.Days
-            $uptimeHours = [math]::Round($uptime.TotalHours, 2)
-            $uptime = $($uptimeDays * 24) + $uptimeHours
+            $uptime = Get-Uptime
 
             # Net connection
             $uplinkStatus = Test-Connection "google.com" -Quiet
@@ -127,17 +121,30 @@ function New-SystemMonitor {
             $uptimeColor = if ($uptime -gt $uptimeCritical) { $colorCritical } elseif ($uptime -gt $uptimeWarning) { $colorWarning } else { $colorHealthy }
             $linkColor = if ($uplinkStatus) { $colorHealthy } else { $colorCritical }
 
+            # clean start time
+            # foreach ($process in $processes) 
+            # {
+            #     if ($null -eq $process.StartTime){
+            #         $process.StartTime = "00:00"
+            #     }
+            # }
+
             # Create a list of custom objects
             $data = @()
             foreach ($process in $processes) 
             {
-                
+                # CLEAN DATA
+                $timestamp = if ($null -eq $process.StartTime) {"0:00:00 AM"} else {$process.StartTime.ToString().subString(10)}
+                $name = if ($process.Name.Length -gt 15) { $process.Name.subString(0,15)} else { $process.Name}
+
+
                     $obj = New-Object -TypeName PSObject
-                    $obj | Add-Member  -Name Name -MemberType NoteProperty -Value $process.Name
+                    $obj | Add-Member  -Name Name -MemberType NoteProperty -Value $name
                     $obj | Add-Member -Name ID -MemberType NoteProperty -Value $process.Id
                     $obj | Add-Member  -Name CPU -MemberType NoteProperty -Value $([math]::Round($process.CPU, 2))
                     $obj | Add-Member  -Name Memory -MemberType NoteProperty -Value $([math]::Round($process.WorkingSet64 / 1MB, 2))
                     $obj | Add-Member  -Name DiskIO -MemberType NoteProperty -Value $diskUsageDetails[$process.Name]
+                    $obj | Add-Member  -Name Time -MemberType NoteProperty -Value $timestamp.Trim()
                     $data += $obj
             }
 
@@ -149,31 +156,32 @@ function New-SystemMonitor {
             Clear-Host
 
             # Monitor Header
-            Write-Host "$block $username $block $systemModel $block BIOS $biosVersion" -ForegroundColor $colorHealthy -NoNewline 
+            Write-Host "$block $username $block $systemModel $block BIOS $biosVersion $block SERIAL $serialNumber" -ForegroundColor $colorHealthy -NoNewline 
             write-host " $block $windowsName $windowsVersion.$windowsBuild $block" -ForegroundColor $colorHealthy
 
             Write-Host "$block CPU $([math]::Round($cpuUsage, 2))%" -ForegroundColor $cpuColor -NoNewline
             Write-Host " $block MEM $usedMemoryGB / $totalMemoryGB GB ($memoryUsagePercent%)" -ForegroundColor $memoryColor -NoNewline
-            Write-Host " $block DISK $systemDiskFreeGB GB" -ForegroundColor $diskColor -NoNewline
+            Write-Host " $block DISK FREE $systemDiskFreeGB GB" -ForegroundColor $diskColor -NoNewline
             Write-Host " $block UPTIME $uptime" -ForegroundColor $uptimeColor -NoNewline
             Write-Host " $block UPLINK" -ForegroundColor $linkColor -NoNewline
             Write-Host " $block $(Get-Timestamp) $block" -ForegroundColor $colorHeader
             Write-Host $(Get-HorizontalBar)
 
             # Table Header
-            Write-Host "ID".PadRight(10) `t "CPU".PadRight(10) `t "Memory".PadRight(10) `t "Disk".PadRight(10) `
-            `t "Name".PadRight(10) -ForegroundColor $colorHeader
+            Write-Host "Name".PadRight(16) "ID".PadRight(11) "CPU".PadRight(16)"Memory".PadRight(16) `
+            "Disk".PadRight(16) "Timestamp".PadRight(16) -ForegroundColor $colorHeader
             Write-Host $(Get-HorizontalBar)
 
             # Table Data
             foreach ($item in $filteredData) {
-                if ($watchProcess.Contains($item.name)) {$color=$colorWatch} else {$color=$colorData}
+                if ($watchProcess.Contains($item.name)) {$color=$colorWatch} else {$color=[Console]::BackgroundColor}
 
-                Write-Host $item.ID.ToString().PadRight(10) -ForegroundColor $color -NoNewline
-                Write-Host `t $item.CPU.ToString("F2").PadRight(10) -ForegroundColor $color -NoNewline
-                Write-Host `t $item.Memory.ToString("F2").PadRight(10) -ForegroundColor $color -NoNewline
-                Write-Host `t $item.DiskIO.ToString("F2").PadRight(10) -ForegroundColor $color -NoNewline
-                Write-Host `t $(if ($item.Name.Length -gt 10) { $item.Name.subString(0,10)} else { $item.Name.PadRight(10)}) -ForegroundColor $color
+                Write-Host $item.name.PadRight(17) -BackgroundColor $color -ForegroundColor $colorData -NoNewline
+                Write-Host $item.ID.ToString().PadRight(12) -BackgroundColor $color -ForegroundColor $colorData -NoNewline
+                Write-Host $item.CPU.ToString("F2").PadRight(17) -BackgroundColor $color -ForegroundColor $colorData -NoNewline
+                Write-Host $item.Memory.ToString("F2").PadRight(17) -BackgroundColor $color -ForegroundColor $colorData -NoNewline
+                Write-Host $item.DiskIO.ToString("F2").PadRight(17) -BackgroundColor $color -ForegroundColor $colorData -NoNewline
+                Write-Host $item.Time.PadRight(17) -BackgroundColor $color -ForegroundColor $colorData 
      
             }
 

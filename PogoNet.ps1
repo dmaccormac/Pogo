@@ -15,6 +15,9 @@ Specifies the interval (in seconds) at which to refresh the network information.
 .PARAMETER watchProcess
 Specifies the name(s) of the process to highlight in the table view.
 
+.PARAMETER interfaceName
+Specifies the name of the network interface to monitor.
+
 .PARAMETER transferWarningThreshold
 Specifies the threshold for bytes transfer warning (in MB). Exceeds will highlight the value in yellow.
 
@@ -35,6 +38,7 @@ function New-NetworkMonitor {
     [double]$transferWarningThreshold = 5.0,  # Threshold for bytes sent (MB)
     [double]$transferCriticalThreshold = 10.0,  # Threshold for bytes received (MB)
     [string[]]$watchProcess = "watcher",  # Number of items to display
+    [string]$interfaceName = "Wi-Fi",  # Number of items to display
     [switch]$devMode
     )
 
@@ -42,11 +46,10 @@ function New-NetworkMonitor {
     $colorHealthy = "Green"
     $colorWarning = "Yellow" 
     $colorCritical = "Red"
-    
-    $colorHeader = $colorHealthy
     $colorData = "White"
 
-    $colorWatch = "Magenta"
+    $colorHeader = $colorHealthy
+    $colorWatch = $colorCritical
     
     $block = [char]0x2588  # Block character for padding
     $upArrow = [char]0x2191
@@ -66,16 +69,28 @@ function New-NetworkMonitor {
                         @{Name='PID'; Expression={$_.OwningProcess}}, `
                         @{Name='Name'; Expression={(Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).Name}}, `
                         @{Name='Time'; Expression={$_.CreationTime}}
-                        
-        # Gather useful network information
+
+                           
+        # Clean data
+        foreach ($item in $connections){
+            $item.Name = $item.Name.subString(0, [System.Math]::Min(15, $item.Name.Length))
+            $item.LocalAddress = $item.LocalAddress.subString(0, [System.Math]::Min(15, $item.LocalAddress.Length)) 
+            $item.RemoteAddress = $item.RemoteAddress.subString(0, [System.Math]::Min(15, $item.RemoteAddress.Length))
+            $item.Time = if ($null -eq $item.Time) {"0:00:00 AM"} else {$item.Time.ToString().subString(10)}
+            
+        }
+        #.substring(0, [System.Math]::Min(15, $item.LocalAddress.Length))
+
+  
+        # Gather network information
         $ipAddress = Get-LanIP
         $macAddress = Get-MacAddress
         $wanIp = Get-WanIP
         $geoLocation = Get-IPGeoLocation -ipAddress $wanIp -fields "countryCode"
         $countryCode = if ($geoLocation -is [PSCustomObject]) { $geoLocation.countryCode } else { "??" }
-        $dnsServers = (Get-DnsClientServerAddress -AddressFamily IPv4).ServerAddresses -join ", "
-        $ssid = (netsh wlan show interfaces | Select-String ' SSID ' | ForEach-Object { $_.ToString().Trim() -replace 'SSID\s+:\s+', '' })
-        $interfaceName = (Get-NetConnectionProfile).Name
+        $dnsServers = Get-dnsServers #(Get-DnsClientServerAddress -AddressFamily IPv4).ServerAddresses -join ","
+        #$ssid = (netsh wlan show interfaces | Select-String ' SSID ' | ForEach-Object { $_.ToString().Trim() -replace 'SSID\s+:\s+', '' })
+        #$interfaceName = (Get-NetConnectionProfile).Name
 
         # Get network bytes sent and received
         $networkAdapters = Get-CimInstance -ClassName Win32_PerfFormattedData_Tcpip_NetworkInterface
@@ -91,30 +106,36 @@ function New-NetworkMonitor {
         Write-Host "$block WAN $wanIp $block GEO $countryCode $block XFR" -ForegroundColor $colorHeader -NoNewline
         Write-Host " $upArrow $bytesSentTotal MB" -ForegroundColor $bytesSentColor -NoNewline
         Write-Host " $downArrow $bytesReceivedTotal MB" -ForegroundColor $bytesReceivedColor -NoNewline
-        Write-Host " $block INT $interfaceName $block SSID $ssid $block $(Get-Timestamp) $block" -ForegroundColor $colorHeader
+        Write-Host " $block INT $interfaceName $block $(Get-Timestamp) $block" -ForegroundColor $colorHeader
         Write-Host $(Get-HorizontalBar)
 
         # Table Header
-        Write-Host "ID".PadRight(5) `t "Local".PadRight(15) `t "Port".PadRight(5) `t "Remote".PadRight(15) `
-        `t "Port".PadRight(5) `t "Timestamp".PadRight(10) `t "Name".PadRight(9) -ForegroundColor $colorHeader
+        Write-Host "Name".PadRight(19) "ID".PadRight(9) "Local/Port".PadRight(24) "Remote/Port".PadRight(24) "Timestamp".PadRight(19) -ForegroundColor $colorHeader
         Write-Host $(Get-HorizontalBar)
 
         # Table Data
-        foreach ($item in $connections) {
-            if ($watchProcess.Contains($item.name)) {$color=$colorWatch} else {$color=$colorData}
+        # foreach ($item in $connections) {
+        #     if ($watchProcess.Contains($item.name)) {$color=$colorWatch} else {$color=$colorData}
 
-            Write-Host $item.PID.ToString().PadRight(5) -ForegroundColor $color -NoNewline
-            Write-Host `t $item.LocalAddress.ToString().PadRight(15) -ForegroundColor $color -NoNewline
-            Write-Host `t $item.LocalPort.ToString().PadRight(5) -ForegroundColor $color -NoNewline
-            Write-Host `t $item.RemoteAddress.ToString().PadRight(15) -ForegroundColor $color -NoNewline
-            Write-Host `t $item.RemotePort.ToString().PadRight(5) -ForegroundColor $color -NoNewline
-            Write-Host `t $item.Time.ToString().subString(10) -ForegroundColor $color -NoNewline
-            Write-Host `t $(if ($item.Name.Length -gt 10) { $item.Name.subString(0,10)} else { $item.Name.PadRight(10)}) -ForegroundColor $color
+            foreach ($item in $connections) {
+                if ($watchProcess.Contains($item.name)) {$color=$colorWatch} else {$color=[Console]::BackgroundColor}
+
+            $local = $item.LocalAddress.toString() + " " + $item.LocalPort.ToString()
+            $remote = $item.RemoteAddress.toString() + " " + $item.RemotePort.ToString()
+
+
+            Write-Host $item.Name.PadRight(20) -BackgroundColor $color -ForegroundColor $colorData -NoNewline
+            Write-Host $item.PID.ToString().PadRight(10) -BackgroundColor $color -ForegroundColor $colorData -NoNewline
+            Write-Host $local.PadRight(25) -BackgroundColor $color -ForegroundColor $colorData -NoNewline
+            Write-Host $remote.PadRight(25) -BackgroundColor $color -ForegroundColor $colorData -NoNewline
+            Write-Host $item.Time.PadRight(20) -BackgroundColor $color -ForegroundColor $colorData 
 
         }
-
-
+    
     # Wait for the specified interval before refreshing
     Start-Sleep -Seconds $refreshInterval
+        
+    }
+
 }
-}
+
