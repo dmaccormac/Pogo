@@ -1,21 +1,32 @@
-# Pogo PowerShell Module
+# Pogo (PowerShell Goto)
 
 ## Overview
 
-The Pogo PowerShell Module provides advanced monitoring tools for system and network performance. It includes functions to monitor CPU usage, memory usage, disk space, network connections, and more, in real time.
-
+The Pogo PowerShell Module is a collection of functions for system administration including Linux `top` style monitors for system and network information. 
 
 ## Features
 
-- **System Monitoring**: Track CPU, memory usage, and disk space with customizable refresh intervals and thresholds.
+- **System Monitoring**: Track CPU, memory, and disk space. Customizable refresh intervals and thresholds.
 - **Network Monitoring**: Monitor network connections, bytes sent/received, and more.
-- **Real-Time Updates**: Get real-time performance metrics with options to refresh the data on demand.
-- **Customizable Display**: Configure the number of items to display, and sort by various metrics such as CPU, memory, and disk I/O.
+- **Customizable Display**: Configure the number of items to display and sort by various metrics.
 
+## Installation
+Copy the Pogo folder to your PowerShell Modules directory, usually `$HOME\Documents\WindowsPowerShell\Modules`.
+
+```bash
+cd $HOME\Documents\WindowsPowerShell\Modules
+git clone https://github.com/dmaccormac/Pogo
+```
+
+## Usage
+Import the module into your PowerShell session with:
+```powershell
+Import-Module Pogo
+```
 
 ## Functions
 
-### New-PogoSystemMonitor
+### New-PGSystemMonitor
 Monitors system metrics such as CPU usage, memory usage, and disk space, and provides real-time updates.
 
 #### Parameters:
@@ -26,33 +37,61 @@ Monitors system metrics such as CPU usage, memory usage, and disk space, and pro
 
 #### Example:
 ```powershell
-New-PogoSystemMonitor -refreshInterval 60 -sortBy CPU -topN 10
+New-PGSystemMonitor -refreshInterval 60 -sortBy CPU -topN 10
 ```
 
 
-### New-PogoNetworkMonitor
+### New-PGNetworkMonitor
 Monitors network connections and displays information about the top N connections.
 
 #### Parameters:
+- **interfaceName**: Network interface to monitor. Wi-Fi is default.
 - **top**: Specifies the number of top network connections to display.
 - **refreshInterval**: Specifies the interval (in seconds) at which to refresh the system metrics.
-- **transferWarningThreshold**: Specifies the threshold for bytes transfer warning (in MB). Exceeds highlighted in yellow.
-- **transferCriticalThreshold**: Specifies the threshold for bytes transfer critical (in MB). Exceeds highlighted in red.
+- **transferWarningThreshold**: Threshold for bytes transfer warning (in MB). Exceeds highlighted in yellow.
+- **transferCriticalThreshold**: Threshold for bytes transfer critical (in MB). Exceeds highlighted in red.
 - **watchProcess**: Specifies the name(s) of the process to highlight in the table view.
 
 Example:
 ```powershell
-New-PogoNetworkMonitor -watchProcess msedge -refreshInterval 30 -transferCriticalThreshold 9.9 
+New-PGNetworkMonitor -watchProcess msedge -refreshInterval 30 -transferCriticalThreshold 9.9 
 ```
 
-## Installation
-To install the Pogo PowerShell Module, copy the module files to your PowerShell modules directory, typically located at:
-```powershell
-C:\Users\<YourUsername>\Documents\WindowsPowerShell\Modules\Pogo
+## More functions
+
+```bash
+PS C:\Users\Dan> Get-Command -Module Pogo
+
+CommandType     Name                                               Version    Source
+-----------     ----                                               -------    ------
+Function        Exit-PGUserSession                                 1.2.1      Pogo
+Function        Get-PGIPGeoLocation                                1.2.1      Pogo
+Function        New-PGNetworkMonitor                               1.2.1      Pogo
+Function        New-PGSystemMonitor                                1.2.1      Pogo
+Function        Restart-PGComputer                                 1.2.1      Pogo
+Function        Show-PGAdvancedSystemProperties                    1.2.1      Pogo
+Function        Show-PGColorGrid                                   1.2.1      Pogo
+Function        Show-PGColorList                                   1.2.1      Pogo
+Function        Stop-PGComputer                                    1.2.1      Pogo
+Function        Suspend-PGComputer                                 1.2.1      Pogo
+Function        Switch-PGVolumeMute                                1.2.1      Pogo
 ```
 
-## Usage
-Import the module into your PowerShell session with:
-```powershell
-Import-Module Pogo
+## Aliases
+
+```bash
+PS C:\Users\Dan> Get-Alias -Name *PG*
+
+CommandType     Name                                               Version    Source
+-----------     ----                                               -------    ------
+Alias           PGadv -> Show-PGAdvancedSystemProperties           1.2.1      Pogo
+Alias           PGnap -> Suspend-PGComputer                        1.2.1      Pogo
+Alias           PGnet -> New-PGNetworkMonitor                      1.2.1      Pogo
+Alias           PGoff -> Stop-PGComputer                           1.2.1      Pogo
+Alias           PGout -> Exit-PGUserSession                        1.2.1      Pogo
+Alias           PGpwr -> Show-PowerOptionsApplet                   1.2.1      Pogo
+Alias           PGreb -> Restart-PGComputer                        1.2.1      Pogo
+Alias           PGsys -> New-PGSystemMonitor                       1.2.1      Pogo
+Alias           PGvol -> Switch-PGVolumeMute                       1.2.1      Pogo
 ```
+
