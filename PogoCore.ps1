@@ -12,6 +12,12 @@ $devMessage = "DevMode"
 
 [int]$timeout=10
 
+<#
+.SYNOPSIS
+Shutdown the computer
+.DESCRIPTION   
+This function will shutdown the computer after a specified timeout period.
+#>
 function Stop-Computer {
     Write-Host "**WARNING**  Shutting down in $timeout seconds..." -ForegroundColor Red
     Start-Sleep -Seconds $timeout
@@ -19,6 +25,12 @@ function Stop-Computer {
 
 }
 
+<#
+.SYNOPSIS
+Log out of the current user session
+.DESCRIPTION   
+This function will log out of the current user session after a specified timeout period.
+#>
 function Exit-UserSession {
     Write-Host "**WARNING**  Logging out in $timeout seconds..." -ForegroundColor Red
     Start-Sleep -Seconds $timeout
@@ -27,6 +39,12 @@ function Exit-UserSession {
 
 }
 
+<#
+.SYNOPSIS
+Restart the computer
+.DESCRIPTION   
+This function will restart the computer after a specified timeout period.
+#>
 function Restart-Computer {
     Write-Host "**WARNING**  Restarting computer in $timeout seconds..." -ForegroundColor Red
     Start-Sleep -Seconds $timeout
@@ -35,7 +53,12 @@ function Restart-Computer {
 
 }
 
-
+<#
+.SYNOPSIS
+Suspend the computer
+.DESCRIPTION   
+This function will suspend the computer after a specified timeout period.
+#>
 function Suspend-Computer {
     Write-Host "**WARNING**  Putting computer to sleep in $timeout seconds..." -ForegroundColor Yellow
     Start-Sleep -Seconds $timeout
@@ -43,12 +66,24 @@ function Suspend-Computer {
 
 }
 
+<#
+.SYNOPSIS
+Show advanced system properties
+.DESCRIPTION   
+This function will open the System Properties dialog box with the Advanced tab selected.
+#>
 function Show-AdvancedSystemProperties {
     Write-Output "Starting System Properties...";
     Start-Process "control" -ArgumentList "sysdm.cpl,,3"
 
 }
 
+<#
+.SYNOPSIS
+Shows the Power Options applet
+.DESCRIPTION   
+This function will open the Power Options applet in the Control Panel.
+#>
 function Show-PowerOptionsApplet {
     Write-Output "Starting Power Configuration...";
     Start-Process powercfg.cpl
@@ -85,6 +120,12 @@ function Get-HorizontalBar{
 
 }
 
+<#
+.SYNOPSIS
+Show a simple list of console colors
+.DESCRIPTION   
+This function will display a list of console colors in both foreground and background.
+#>
 function Show-ColorList {
     
     $List = [enum]::GetValues([System.ConsoleColor])
@@ -102,6 +143,12 @@ function Show-ColorList {
     } #end background color ForEach loop
 }
 
+<#
+.SYNOPSIS
+Show detailed color grid
+.DESCRIPTION   
+This function will display a detailed color grid with foreground and background combinations.
+#>
 function Show-ColorGrid
 {
     $colors = [enum]::GetValues([System.ConsoleColor])
@@ -151,6 +198,12 @@ function Get-MacAddress {
     return ($mac -replace '-', ':').Trim()
 }
 
+<#
+.SYNOPSIS
+Get the Geo Location of an IP address
+.DESCRIPTION   
+This function will return the Geo Location of an IP address using the ip-api.com API.
+#>
 function Get-IPGeoLocation {
     param(
         [string]$ipAddress,
@@ -190,7 +243,12 @@ function Test-IPv4Address {
     }
 }
 
-
+<#
+.SYNOPSIS
+Show the IP-Geo Cache
+.DESCRIPTION   
+This function will display the IP-Geo Cache in a table format.
+#>
 function Show-GeoCache {
     # Hardcoded global geoCache variable
     $geoCache = $global:geoCache

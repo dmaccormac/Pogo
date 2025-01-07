@@ -76,11 +76,9 @@ function New-NetworkMonitor {
             $item.Name = $item.Name.subString(0, [System.Math]::Min(15, $item.Name.Length))
             $item.LocalAddress = $item.LocalAddress.subString(0, [System.Math]::Min(15, $item.LocalAddress.Length)) 
             $item.RemoteAddress = $item.RemoteAddress.subString(0, [System.Math]::Min(15, $item.RemoteAddress.Length))
-            $item.Time = if ($null -eq $item.Time) {"0:00:00 AM"} else {$item.Time.ToString().subString(10)}
+            $item.Time = if ($null -eq $item.Time) {"N/A"} else {$item.Time.ToString()}
             
         }
-        #.substring(0, [System.Math]::Min(15, $item.LocalAddress.Length))
-
   
         # Gather network information
         $ipAddress = Get-LanIP
@@ -88,9 +86,7 @@ function New-NetworkMonitor {
         $wanIp = Get-WanIP
         $geoLocation = Get-IPGeoLocation -ipAddress $wanIp -fields "countryCode"
         $countryCode = if ($geoLocation -is [PSCustomObject]) { $geoLocation.countryCode } else { "??" }
-        $dnsServers = Get-dnsServers #(Get-DnsClientServerAddress -AddressFamily IPv4).ServerAddresses -join ","
-        #$ssid = (netsh wlan show interfaces | Select-String ' SSID ' | ForEach-Object { $_.ToString().Trim() -replace 'SSID\s+:\s+', '' })
-        #$interfaceName = (Get-NetConnectionProfile).Name
+        $dnsServers = Get-dnsServers 
 
         # Get network bytes sent and received
         $networkAdapters = Get-CimInstance -ClassName Win32_PerfFormattedData_Tcpip_NetworkInterface
@@ -110,19 +106,15 @@ function New-NetworkMonitor {
         Write-Host $(Get-HorizontalBar)
 
         # Table Header
-        Write-Host "Name".PadRight(19) "ID".PadRight(9) "Local/Port".PadRight(24) "Remote/Port".PadRight(24) "Timestamp".PadRight(19) -ForegroundColor $colorHeader
+        Write-Host "Name".PadRight(19) "ID".PadRight(9) "Local/Port".PadRight(24) "Remote/Port".PadRight(24) "Date/Time".PadRight(19) -ForegroundColor $colorHeader
         Write-Host $(Get-HorizontalBar)
 
         # Table Data
-        # foreach ($item in $connections) {
-        #     if ($watchProcess.Contains($item.name)) {$color=$colorWatch} else {$color=$colorData}
-
-            foreach ($item in $connections) {
-                if ($watchProcess.Contains($item.name)) {$color=$colorWatch} else {$color=[Console]::BackgroundColor}
+        foreach ($item in $connections) {
+            if ($watchProcess.Contains($item.name)) {$color=$colorWatch} else {$color=[Console]::BackgroundColor}
 
             $local = $item.LocalAddress.toString() + " " + $item.LocalPort.ToString()
             $remote = $item.RemoteAddress.toString() + " " + $item.RemotePort.ToString()
-
 
             Write-Host $item.Name.PadRight(20) -BackgroundColor $color -ForegroundColor $colorData -NoNewline
             Write-Host $item.PID.ToString().PadRight(10) -BackgroundColor $color -ForegroundColor $colorData -NoNewline

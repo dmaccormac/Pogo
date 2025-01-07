@@ -111,7 +111,8 @@ function New-SystemMonitor {
 
                 }
             } catch {
-                Write-Host $_.Exception.Message
+                # Write-Host $_.Exception.Message
+                Write-Host "Warning: Invalid disk usage data encountered!" -ForegroundColor Yellow
             }
 
             # Set alert colors
@@ -121,20 +122,12 @@ function New-SystemMonitor {
             $uptimeColor = if ($uptime -gt $uptimeCritical) { $colorCritical } elseif ($uptime -gt $uptimeWarning) { $colorWarning } else { $colorHealthy }
             $linkColor = if ($uplinkStatus) { $colorHealthy } else { $colorCritical }
 
-            # clean start time
-            # foreach ($process in $processes) 
-            # {
-            #     if ($null -eq $process.StartTime){
-            #         $process.StartTime = "00:00"
-            #     }
-            # }
-
             # Create a list of custom objects
             $data = @()
             foreach ($process in $processes) 
             {
                 # CLEAN DATA
-                $timestamp = if ($null -eq $process.StartTime) {"0:00:00 AM"} else {$process.StartTime.ToString().subString(10)}
+                $timestamp = if ($null -eq $process.StartTime) {"N/A"} else {$process.StartTime.ToString()}
                 $name = if ($process.Name.Length -gt 15) { $process.Name.subString(0,15)} else { $process.Name}
 
 
@@ -144,7 +137,7 @@ function New-SystemMonitor {
                     $obj | Add-Member  -Name CPU -MemberType NoteProperty -Value $([math]::Round($process.CPU, 2))
                     $obj | Add-Member  -Name Memory -MemberType NoteProperty -Value $([math]::Round($process.WorkingSet64 / 1MB, 2))
                     $obj | Add-Member  -Name DiskIO -MemberType NoteProperty -Value $diskUsageDetails[$process.Name]
-                    $obj | Add-Member  -Name Time -MemberType NoteProperty -Value $timestamp.Trim()
+                    $obj | Add-Member  -Name Time -MemberType NoteProperty -Value $timestamp
                     $data += $obj
             }
 
@@ -156,7 +149,7 @@ function New-SystemMonitor {
             Clear-Host
 
             # Monitor Header
-            Write-Host "$block $username $block $systemModel $block BIOS $biosVersion $block SERIAL $serialNumber" -ForegroundColor $colorHealthy -NoNewline 
+            Write-Host "$block $hostname $block $systemModel $block BIOS $biosVersion $block SERIAL $serialNumber" -ForegroundColor $colorHealthy -NoNewline 
             write-host " $block $windowsName $windowsVersion.$windowsBuild $block" -ForegroundColor $colorHealthy
 
             Write-Host "$block CPU $([math]::Round($cpuUsage, 2))%" -ForegroundColor $cpuColor -NoNewline
