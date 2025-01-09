@@ -11,7 +11,7 @@ $global:geoCache = @{}
 # Set aliases for the functions
 New-Alias -Name net -Value New-NetworkMonitor
 New-Alias -Name sys -Value New-SystemMonitor
-New-Alias -Name geo -Value Get-IPGeoLocation
+New-Alias -Name ipg -Value Get-IPGeoLocation
 
 New-Alias -Name adv -Value Show-AdvancedSystemProperties
 New-Alias -Name pwr -Value Show-PowerOptionsApplet
