@@ -2,26 +2,35 @@
 
 ## Overview
 
-The Pogo PowerShell Module is a collection of functions for system administration including Linux `top` style monitors for system and network information. 
+The Pogo PowerShell Module is a collection of functions for system administration including Linux-style `top` monitors for system and network. 
 
 ## Features
 
-- **System Monitoring**: Track CPU, memory, and disk space. Customizable refresh intervals and thresholds.
-- **Network Monitoring**: Monitor network connections, bytes sent/received, and more.
-- **Customizable Display**: Configure the number of items to display and sort by various metrics.
+- **System Monitoring**: Track CPU, memory, disk and system information.
+- **Network Monitoring**: Monitor connections, ports, bandwidth and network statistics.
+- **More**: Various system shortcuts and utilities which can be mapped to hot keys.
 
 ## Installation
-Copy the Pogo folder to your PowerShell Modules directory, usually `$HOME\Documents\WindowsPowerShell\Modules`.
 
-```bash
-cd $HOME\Documents\WindowsPowerShell\Modules
-git clone https://github.com/dmaccormac/Pogo
-```
+1. Download the zip file [here](https://github.com/dmaccormac/Pogo/archive/refs/heads/main.zip)
+2. Extract the Pogo folder to `$HOME\Documents\WindowsPowerShell\Modules`
+3. Unblock Files
+
+    ```powershell
+    Unblock-File $HOME\Documents\WindowsPowerShell\Modules\Pogo\Pogo*
+    ``` 
 
 ## Usage
-Import the module into your PowerShell session with:
+
+### Import Module:
+
 ```powershell
 Import-Module Pogo
+```
+
+### Verify Import:
+```powershell
+Get-Command -Module Pogo
 ```
 
 ## Functions
@@ -31,13 +40,18 @@ Monitors system metrics such as CPU usage, memory usage, and disk space, and pro
 
 #### Parameters:
 - **refreshInterval**: Specifies the interval (in seconds) at which to refresh the system metrics.
-- **sortBy**: Specifies the column by which to sort the process list. Valid values are 'CPU', 'Memory', and 'DiskIO'.
+- **sortBy**: Specifies the column by which to sort the process list. Valid values are 'CPU', 'Memory', and 'DiskIO'. Default value is 'Memory'.
 - **top**: Specifies the number of items to display in the view. Default value is 10.
-- **watchProcess**: Specifies the name(s) of the process to highlight in the table view.
+- **watchProcess**: Specifies the name(s) of the process to highlight in the table view. Must match truncated name (15 chars). 
 
-#### Example:
+#### Example 1:
 ```powershell
-New-PGSystemMonitor -refreshInterval 60 -sortBy CPU -topN 10
+New-PGSystemMonitor -top 10 -sortBy CPU
+```
+
+#### Example 2:
+```powershell
+PGsys -watchProcess explorer -refreshInterval 30
 ```
 
 
@@ -50,11 +64,16 @@ Monitors network connections and displays information about the top N connection
 - **refreshInterval**: Specifies the interval (in seconds) at which to refresh the system metrics.
 - **transferWarningThreshold**: Threshold for bytes transfer warning (in MB). Exceeds highlighted in yellow.
 - **transferCriticalThreshold**: Threshold for bytes transfer critical (in MB). Exceeds highlighted in red.
-- **watchProcess**: Specifies the name(s) of the process to highlight in the table view.
+- **watchProcess**: Specifies the name(s) of the process to highlight in the table view. Must match truncated name (15 chars). 
 
-Example:
+#### Example 1:
 ```powershell
-New-PGNetworkMonitor -watchProcess msedge -refreshInterval 30 -transferCriticalThreshold 9.9 
+New-PGNetworkMonitor -watchProcess msedge -transferWarningThreshold 9.9
+```
+
+#### Example 2:
+```powershell
+PGnet -watchProcess msedge,firefox -interfaceName Ethernet2 
 ```
 
 ## More functions
@@ -64,17 +83,18 @@ PS C:\Users\Dan> Get-Command -Module Pogo
 
 CommandType     Name                                               Version    Source
 -----------     ----                                               -------    ------
-Function        Exit-PGUserSession                                 1.2.1      Pogo
-Function        Get-PGIPGeoLocation                                1.2.1      Pogo
-Function        New-PGNetworkMonitor                               1.2.1      Pogo
-Function        New-PGSystemMonitor                                1.2.1      Pogo
-Function        Restart-PGComputer                                 1.2.1      Pogo
-Function        Show-PGAdvancedSystemProperties                    1.2.1      Pogo
-Function        Show-PGColorGrid                                   1.2.1      Pogo
-Function        Show-PGColorList                                   1.2.1      Pogo
-Function        Stop-PGComputer                                    1.2.1      Pogo
-Function        Suspend-PGComputer                                 1.2.1      Pogo
-Function        Switch-PGVolumeMute                                1.2.1      Pogo
+Function        Exit-PGUserSession                                 1.2.3      Pogo
+Function        Get-PGIPGeoLocation                                1.2.3      Pogo
+Function        New-PGNetworkMonitor                               1.2.3      Pogo
+Function        New-PGSystemMonitor                                1.2.3      Pogo
+Function        Restart-PGComputer                                 1.2.3      Pogo
+Function        Show-PGAdvancedSystemProperties                    1.2.3      Pogo
+Function        Show-PGColorGrid                                   1.2.3      Pogo
+Function        Show-PGColorList                                   1.2.3      Pogo
+Function        Show-PGPowerOptionsApplet                          1.2.3      Pogo
+Function        Stop-PGComputer                                    1.2.3      Pogo
+Function        Suspend-PGComputer                                 1.2.3      Pogo
+Function        Switch-PGVolumeMute                                1.2.3      Pogo
 ```
 
 ## Aliases
@@ -84,14 +104,16 @@ PS C:\Users\Dan> Get-Alias -Name *PG*
 
 CommandType     Name                                               Version    Source
 -----------     ----                                               -------    ------
-Alias           PGadv -> Show-PGAdvancedSystemProperties           1.2.1      Pogo
-Alias           PGnap -> Suspend-PGComputer                        1.2.1      Pogo
-Alias           PGnet -> New-PGNetworkMonitor                      1.2.1      Pogo
-Alias           PGoff -> Stop-PGComputer                           1.2.1      Pogo
-Alias           PGout -> Exit-PGUserSession                        1.2.1      Pogo
-Alias           PGpwr -> Show-PowerOptionsApplet                   1.2.1      Pogo
-Alias           PGreb -> Restart-PGComputer                        1.2.1      Pogo
-Alias           PGsys -> New-PGSystemMonitor                       1.2.1      Pogo
-Alias           PGvol -> Switch-PGVolumeMute                       1.2.1      Pogo
+Alias           PGadv -> Show-PGAdvancedSystemProperties           1.2.3      Pogo
+Alias           PGcol -> Show-PGColorGrid                          1.2.3      Pogo
+Alias           PGipg -> Get-PGIPGeoLocation                       1.2.3      Pogo
+Alias           PGnap -> Suspend-PGComputer                        1.2.3      Pogo
+Alias           PGnet -> New-PGNetworkMonitor                      1.2.3      Pogo
+Alias           PGoff -> Stop-PGComputer                           1.2.3      Pogo
+Alias           PGout -> Exit-PGUserSession                        1.2.3      Pogo
+Alias           PGpwr -> Show-PGPowerOptionsApplet                 1.2.3      Pogo
+Alias           PGreb -> Restart-PGComputer                        1.2.3      Pogo
+Alias           PGsys -> New-PGSystemMonitor                       1.2.3      Pogo
+Alias           PGvol -> Switch-PGVolumeMute                       1.2.3      Pogo
 ```
 
