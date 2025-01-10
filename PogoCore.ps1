@@ -266,5 +266,21 @@ function Show-GeoCache {
     $cacheArray | Format-Table -AutoSize
 }
 
+<#
+.SYNOPSIS
+Display a message of the day
+.DESCRIPTION   
+This function will display a random message from the motd.txt file.
+#>
+function New-MessageOfTheDay {
 
+    # read random messages from the file
+    $motd = Get-Content -Path "$PSScriptRoot\motd.txt"
+
+        # get a random number
+    $random = Get-Random -Minimum 0 -Maximum $motd.Length
+
+    # return the message
+    return $motd[$random]
+}
 
