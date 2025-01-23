@@ -103,7 +103,7 @@ function New-SystemMonitor {
             $diskUsageDetails = @{}
 
             try {
-                $diskCounters = Get-Counter -Counter '\Process(*)\IO Data Bytes/sec'
+                $diskCounters = Get-Counter -Counter '\Process(*)\IO Data Bytes/sec' -ErrorAction SilentlyContinue
                 foreach ($sample in $diskCounters.CounterSamples) {
                         $processName = $sample.InstanceName
                         $diskBytesPerSec = [math]::Round($sample.CookedValue / 1MB, 2)  # Convert to MB/sec

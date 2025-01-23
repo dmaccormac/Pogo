@@ -21,7 +21,7 @@ This function will shutdown the computer after a specified timeout period.
 function Stop-Computer {
     Write-Host "**WARNING**  Shutting down in $timeout seconds..." -ForegroundColor Red
     Start-Sleep -Seconds $timeout
-    Start-Process "shutdown" -ArgumentList "/s /t 0"
+    Start-Process "shutdown" -ArgumentList "/s /t $timeout"
 
 }
 
@@ -49,7 +49,7 @@ function Restart-Computer {
     Write-Host "**WARNING**  Restarting computer in $timeout seconds..." -ForegroundColor Red
     Start-Sleep -Seconds $timeout
     Write-Host "Restarting now" -ForegroundColor Green
-    Start-Process "shutdown" -ArgumentList "/r /t 0"
+    Start-Process "shutdown" -ArgumentList "/r /t $timeout"
 
 }
 

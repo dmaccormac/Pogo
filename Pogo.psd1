@@ -3,7 +3,7 @@
     RootModule = 'Pogo.psm1'
 
     # Version number of this module.
-    ModuleVersion = '1.2.4'
+    ModuleVersion = '1.2.5'
 
     # ID used to uniquely identify this module
     GUID = 'e2a2c734-89a7-40bd-8880-fc04422ac3ca'
