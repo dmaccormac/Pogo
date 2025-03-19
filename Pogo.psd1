@@ -3,7 +3,7 @@
     RootModule = 'Pogo.psm1'
 
     # Version number of this module.
-    ModuleVersion = '1.2.5'
+    ModuleVersion = '1.2.6'
 
     # ID used to uniquely identify this module
     GUID = 'e2a2c734-89a7-40bd-8880-fc04422ac3ca'
@@ -15,7 +15,7 @@
     CompanyName = 'Dan MacCormac <dan@maccormac.net>'
 
     # Copyright statement for this module
-    Copyright = '© 2024 Dan MacCormac <dan@maccormac.net>. All rights reserved.'
+    Copyright = '© 2024 - 2025 Dan MacCormac <dan@maccormac.net>. All rights reserved.'
 
     # Description of the functionality provided by this module
     Description = 'PowerShell Goto - Sys Admin Utility'
@@ -35,7 +35,7 @@
     # Functions to export from this module
     FunctionsToExport = @('New-SystemMonitor', 'New-NetworkMonitor', 'Get-IPGeoLocation', 'Stop-Computer', 'Restart-Computer', `
     'Suspend-Computer', 'Exit-UserSession', 'Show-ColorList', 'Show-ColorGrid', 'Show-AdvancedSystemProperties', 'Switch-VolumeMute', `
-    'Show-PowerOptionsApplet', 'New-MessageOfTheDay')
+    'Show-PowerOptionsApplet', 'New-MessageOfTheDay', 'Use-Impersonation')
 
     # Cmdlets to export from this module
     CmdletsToExport = @()
@@ -44,7 +44,7 @@
     VariablesToExport = @()
 
     # Aliases to export from this module
-    AliasesToExport = @('net', 'sys', 'ipg', 'off', 'out', 'reb', 'nap', 'adv', 'pwr', 'vol', 'col')
+    AliasesToExport = @('net', 'sys', 'ipg', 'off', 'out', 'reb', 'nap', 'adv', 'pwr', 'vol', 'col', 'sud')
 
     # DscResources to export from this module
     DscResourcesToExport = @()
