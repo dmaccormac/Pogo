@@ -20,4 +20,4 @@ New-Alias -Name reb -Value Restart-Computer
 New-Alias -Name nap -Value Suspend-Computer
 New-Alias -Name vol -Value Switch-VolumeMute
 New-Alias -Name col -Value Show-ColorGrid
-New-Alias -Name sud -Value Use-Impersonation
+New-Alias -Name run -Value Use-Impersonation

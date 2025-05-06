@@ -305,7 +305,6 @@ function Use-Impersonation {
     $password = Read-Host -Prompt "Enter password" -AsSecureString
     $credentials = New-Object System.Management.Automation.PSCredential($username, $password)
 
-
     # Execute command with provided credentials
     Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command & {& $command}" -Credential $credentials
 
