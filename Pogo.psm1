@@ -21,3 +21,4 @@ New-Alias -Name nap -Value Suspend-Computer
 New-Alias -Name vol -Value Switch-VolumeMute
 New-Alias -Name col -Value Show-ColorGrid
 New-Alias -Name run -Value Use-Impersonation
+New-Alias -Name md5 -Value Get-HashMD5

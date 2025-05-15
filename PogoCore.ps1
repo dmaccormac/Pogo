@@ -310,5 +310,12 @@ function Use-Impersonation {
 
 }
 
+function Get-HashMD5 {
+    param (
+        [string]$Path
+    )
+    Get-FileHash -Path $Path -Algorithm MD5
+}
+
 
 
